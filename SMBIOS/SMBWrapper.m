@@ -40,6 +40,43 @@ static SMBWrapper *sharedInstance = nil;
 }
 
 /**
+ * dump - Calls "AppleSMBIOS" IOService to get SMBIOS tables
+ */
+-(CFDataRef) dump {
+    mach_port_t myMasterPort;
+    IOMasterPort(MACH_PORT_NULL, &myMasterPort);
+    CFMutableDictionaryRef        myMatchingDictionary;
+    
+    io_object_t                   foundService;
+    myMatchingDictionary = IOServiceMatching("AppleSMBIOS");
+    foundService = IOServiceGetMatchingService( myMasterPort, myMatchingDictionary );
+    
+    CFMutableDictionaryRef    properties    = NULL;
+    CFDataRef                 smbiosdata;
+    
+    IORegistryEntryCreateCFProperties( foundService,
+                                      &properties,
+                                      kCFAllocatorDefault,
+                                      kNilOptions );
+    
+    CFDictionaryGetValueIfPresent( properties,
+                                  CFSTR("SMBIOS"),
+                                  (const void **)&smbiosdata );
+    
+    /*FILE* f;
+     CFIndex len = CFDataGetLength(smbiosdata);
+     UInt8* data = new UInt8[len];
+     CFDataGetBytes(smbiosdata, CFRangeMake(0, len), data);
+     
+     f = fopen("dump.bin","w");
+     fwrite(data, len, 1, f);
+     fclose(f);
+     
+     return 0;*/
+    return smbiosdata;
+}
+
+/**
  * init - Creates an instance of SMBWrapper
  */
 -(id) init
