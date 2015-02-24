@@ -22,10 +22,16 @@
  * SOFTWARE.
  */
 #import <Foundation/Foundation.h>
+#define SMBWrapperVer	"1.0"
+#define DEBUG_msg
+
+
+typedef CFDataRef rawSMBIOS;
 
 @interface SMBWrapper : NSObject
+@property (readonly, nonatomic) rawSMBIOS SMBIOSdump;
+
 +(SMBWrapper *)sharedWrapper;
 -(id) init;
--(CFDataRef) dump;
 -(void) dealloc;
 @end

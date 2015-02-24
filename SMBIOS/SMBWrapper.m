@@ -26,7 +26,7 @@
 static SMBWrapper *sharedInstance = nil;
 
 @interface SMBWrapper() //private methods
-  
+-(BOOL) _SMBIOSdump;
 @end
 
 @implementation SMBWrapper //public methods
@@ -43,38 +43,56 @@ static SMBWrapper *sharedInstance = nil;
 /**
  * dump - Calls "AppleSMBIOS" IOService to get SMBIOS tables
  */
--(CFDataRef) dump {
-    mach_port_t myMasterPort;
+-(BOOL) _SMBIOSdump {
+    mach_port_t 					myMasterPort;
+    CFMutableDictionaryRef        	myMatchingDictionary;
+	kern_return_t					result;
+    io_object_t                   	foundService;
+	
     IOMasterPort(MACH_PORT_NULL, &myMasterPort);
-    CFMutableDictionaryRef        myMatchingDictionary;
-    
-    io_object_t                   foundService;
+	
     myMatchingDictionary = IOServiceMatching("AppleSMBIOS");
     foundService = IOServiceGetMatchingService( myMasterPort, myMatchingDictionary );
+	if (foundService == 0)
+	{
+#ifdef DEBUG_msg
+		printf("Error: IOServiceGetMatchingService() = %08x\n", foundService);
+#endif
+		printf("No \"AppleSMBIOS\" IOService in IORegistry");
+		return false;
+	}
     
     CFMutableDictionaryRef    properties    = NULL;
     CFDataRef                 smbiosdata;
     
-    IORegistryEntryCreateCFProperties( foundService,
+    result = IORegistryEntryCreateCFProperties( foundService,
                                       &properties,
                                       kCFAllocatorDefault,
                                       kNilOptions );
-    
-    CFDictionaryGetValueIfPresent( properties,
+	if (result != kIOReturnSuccess)
+	{
+#ifdef DEBUG_msg
+		printf("Error: IORegistryEntryCreateCFProperties() = %08x\n", result);
+#endif
+		printf("No data in \"AppleSMBIOS\" IOService");
+		return false;
+	}
+	
+    result = CFDictionaryGetValueIfPresent( properties,
                                   CFSTR("SMBIOS"),
                                   (const void **)&smbiosdata );
-    
-    /*FILE* f;
-     CFIndex len = CFDataGetLength(smbiosdata);
-     UInt8* data = new UInt8[len];
-     CFDataGetBytes(smbiosdata, CFRangeMake(0, len), data);
-     
-     f = fopen("dump.bin","w");
-     fwrite(data, len, 1, f);
-     fclose(f);
-     
-     return 0;*/
-    return smbiosdata;
+	if (result != true)
+	{
+#ifdef DEBUG_msg
+		printf("Error: CFDictionaryGetValueIfPresent() = %08x\n", result);
+#endif
+		printf("No \"SMBIOS\" property in \"AppleSMBIOS\" IOService");
+		return false;
+	}
+	
+    _SMBIOSdump = smbiosdata;
+	//NSLog(@"%@", _SMBIOSdump);
+	return true;
 }
 
 /**
@@ -84,7 +102,7 @@ static SMBWrapper *sharedInstance = nil;
 {
 	self = [super init];
 	if (self) {
-		[self _SMBDump]; //dumps SMBIOS
+		[self _SMBIOSdump]; //dumps SMBIOS
 	}
 	return self;
 }
