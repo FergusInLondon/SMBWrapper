@@ -21,9 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#import <Foundation/Foundation.h>
 
 @interface SMCWrapper : NSObject
 +(SMCWrapper *)sharedWrapper;
 -(id) init;
+-(CFDataRef) dump;
 -(void) dealloc;
 @end
