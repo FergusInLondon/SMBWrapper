@@ -23,8 +23,8 @@
  */
 #import <Foundation/Foundation.h>
 
-@interface SMCWrapper : NSObject
-+(SMCWrapper *)sharedWrapper;
+@interface SMBWrapper : NSObject
++(SMBWrapper *)sharedWrapper;
 -(id) init;
 -(CFDataRef) dump;
 -(void) dealloc;

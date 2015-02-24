@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
- 
+
+#import "SMBWrapper.h"
 static SMBWrapper *sharedInstance = nil;
 
 @interface SMBWrapper() //private methods
